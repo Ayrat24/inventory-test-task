@@ -333,5 +333,10 @@ namespace InventorySystem.Scripts
             if (index < 0 || index >= SlotCount)
                 throw new ArgumentOutOfRangeException(nameof(index));
         }
+        
+        public void NotifyChanged()
+        {
+            InventoryChanged?.Invoke();
+        }
     }
 }

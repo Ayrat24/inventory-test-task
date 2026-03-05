@@ -61,6 +61,15 @@ namespace InventorySystem.Scripts
             RaiseAllChanged();
         }
 
+        public void SetUnlockedSlotCount(int value)
+        {
+            int clamped = Mathf.Clamp(value, 0, TotalSlotCount);
+            if (clamped == unlockedSlotCount) return;
+
+            unlockedSlotCount = clamped;
+            RaiseAllChanged();
+        }
+
         private void RaiseAllChanged()
         {
             LockModelChanged?.Invoke();
