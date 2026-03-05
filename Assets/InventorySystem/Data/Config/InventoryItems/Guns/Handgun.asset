@@ -16,5 +16,6 @@ MonoBehaviour:
   displayName: Handgun
   icon: {fileID: 21300000, guid: 479813ee97daf3945a75bdef43857920, type: 3}
   maxStackSize: 1
+  weight: 1
   ammo: {fileID: 11400000, guid: b3db9c2fba97ac845a56c50345e17334, type: 2}
   damage: 10

@@ -16,3 +16,4 @@ MonoBehaviour:
   displayName: RifleAmmo
   icon: {fileID: 21300000, guid: 5b1e3c95d130d404e8962911c0b0058b, type: 3}
   maxStackSize: 30
+  weight: 0.01

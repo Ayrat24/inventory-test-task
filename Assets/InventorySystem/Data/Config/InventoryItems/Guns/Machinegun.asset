@@ -16,5 +16,6 @@ MonoBehaviour:
   displayName: Machinegun
   icon: {fileID: 21300000, guid: 46d374c5366e03e49aeb346a996abfd9, type: 3}
   maxStackSize: 1
+  weight: 5
   ammo: {fileID: 11400000, guid: 4b82901c891b88440b774875da2029e7, type: 2}
-  damage: 10
+  damage: 20

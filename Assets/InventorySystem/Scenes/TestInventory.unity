@@ -1645,6 +1645,7 @@ GameObject:
   - component: {fileID: 998902924}
   - component: {fileID: 998902926}
   - component: {fileID: 998902925}
+  - component: {fileID: 998902927}
   m_Layer: 5
   m_Name: WightText
   m_TagString: Untagged
@@ -1768,6 +1769,23 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 998902923}
   m_CullTransparentMesh: 1
+--- !u!114 &998902927
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 998902923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ed44a5fdde0321747a5f9f4b2118d20b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  controller: {fileID: 1991558801}
+  weightText: {fileID: 998902925}
+  prefix: 'Weight: '
+  suffix: kg
+  decimals: 1
 --- !u!1 &1034474092
 GameObject:
   m_ObjectHideFlags: 0
@@ -2606,8 +2624,8 @@ MonoBehaviour:
   m_ChildAlignment: 0
   m_StartCorner: 0
   m_StartAxis: 0
-  m_CellSize: {x: 250, y: 250}
-  m_Spacing: {x: 32, y: 32}
+  m_CellSize: {x: 230, y: 230}
+  m_Spacing: {x: 52, y: 52}
   m_Constraint: 0
   m_ConstraintCount: 2
 --- !u!1 &1772392866

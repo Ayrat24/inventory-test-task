@@ -16,3 +16,4 @@ MonoBehaviour:
   displayName: HandgunAmmo
   icon: {fileID: 21300000, guid: 701784aeccd064945abc74b8e4a38aed, type: 3}
   maxStackSize: 30
+  weight: 0.01

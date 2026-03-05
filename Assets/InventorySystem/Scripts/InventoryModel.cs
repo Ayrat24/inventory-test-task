@@ -297,6 +297,24 @@ namespace InventorySystem.Scripts
             return true;
         }
 
+        public float GetTotalWeight()
+        {
+            EnsureInitialized();
+            if (slots == null) return 0f;
+
+            float total = 0f;
+            for (int i = 0; i < slots.Length; i++)
+            {
+                var s = slots[i];
+                if (s.IsEmpty) continue;
+                if (s.Item == null) continue;
+
+                total += s.Item.Weight * Mathf.Max(0, s.Quantity);
+            }
+
+            return Mathf.Max(0f, total);
+        }
+
         private void RaiseAllChanged()
         {
             InventoryChanged?.Invoke();
