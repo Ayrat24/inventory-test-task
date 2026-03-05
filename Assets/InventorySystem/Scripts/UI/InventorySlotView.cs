@@ -93,7 +93,10 @@ namespace InventorySystem.Scripts.UI
 
         public void OnPointerClick(PointerEventData eventData)
         {
-            grid.Controller.TryUnlockNextSlot();
+            if(isLocked)
+            {
+                grid.Controller.TryUnlockNextSlot();
+            }
         }
 
         public void OnBeginDrag(PointerEventData eventData)

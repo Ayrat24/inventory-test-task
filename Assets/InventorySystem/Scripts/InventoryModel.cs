@@ -87,17 +87,29 @@ namespace InventorySystem.Scripts
         /// </summary>
         public int Add(InventoryItemDefinition item, int amount)
         {
+            return Add(item, amount, isSlotAvailable: null);
+        }
+
+        /// <summary>
+        /// Adds up to <paramref name="amount"/> of <paramref name="item"/> into slots that satisfy
+        /// <paramref name="isSlotAvailable"/> (when provided). Returns the amount actually added.
+        /// </summary>
+        public int Add(InventoryItemDefinition item, int amount, Func<int, bool> isSlotAvailable)
+        {
             EnsureInitialized();
             if (item == null) return 0;
             if (amount <= 0) return 0;
 
             int remaining = amount;
 
+            bool IsAvailable(int index) => isSlotAvailable == null || isSlotAvailable(index);
+
             // 1) Fill existing stacks.
             if (item.MaxStackSize > 1)
             {
                 for (int i = 0; i < slots.Length && remaining > 0; i++)
                 {
+                    if (!IsAvailable(i)) continue;
                     if (slots[i].IsEmpty) continue;
                     if (!CanStack(slots[i].Item, item)) continue;
 
@@ -118,6 +130,7 @@ namespace InventorySystem.Scripts
             // 2) Put into empty slots.
             for (int i = 0; i < slots.Length && remaining > 0; i++)
             {
+                if (!IsAvailable(i)) continue;
                 if (!slots[i].IsEmpty) continue;
 
                 int toAdd = Math.Min(item.MaxStackSize, remaining);

@@ -48,7 +48,12 @@ namespace InventorySystem.Scripts
             return locks.TryUnlockNext();
         }
 
-        public int Add(InventoryItemDefinition item, int amount) => model.Add(item, amount);
+        public int Add(InventoryItemDefinition item, int amount)
+        {
+            // Only allow adding into unlocked slots.
+            return model.Add(item, amount, isSlotAvailable: i => !IsSlotLocked(i));
+        }
+
         public bool TryConsume(InventoryItemDefinition item, int amount) => model.TryConsume(item, amount);
 
         public void Move(int fromIndex, int toIndex)
