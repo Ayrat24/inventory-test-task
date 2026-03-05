@@ -1,4 +1,3 @@
-using InventorySystem.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -10,15 +9,21 @@ namespace InventorySystem.Scripts.UI
         IBeginDragHandler,
         IDragHandler,
         IEndDragHandler,
-        IDropHandler
+        IDropHandler,
+        IPointerClickHandler
     {
         [Header("UI")]
         [SerializeField] private Image iconImage;
         [SerializeField] private TMP_Text quantityText;
         [SerializeField] private Image highlight;
 
+        [Header("Lock UI")]
+        [SerializeField] private GameObject lockGroup;
+        [SerializeField] private TMP_Text lockText;
+
         private InventoryGridView grid;
         private int index;
+        private bool isLocked;
 
         private Canvas rootCanvas;
         private RectTransform iconRect;
@@ -46,8 +51,35 @@ namespace InventorySystem.Scripts.UI
             highlight.enabled = false;
         }
 
+        public void SetLocked(bool locked)
+        {
+            isLocked = locked;
+
+            lockGroup.SetActive(locked);
+
+            if (quantityText != null)
+                quantityText.alpha = locked ? 0.25f : 1f;
+
+            if (locked)
+            {
+                Set(default);
+                
+                int price = Mathf.Max(0, grid.Controller.Config.UnlockPrice);
+                lockText.text = $"Locked\n{price} coins";
+            }
+        }
+
         public void Set(InventorySlot slot)
         {
+            if (isLocked)
+            {
+                // Locked slots never show contents.
+                iconImage.enabled = false;
+                iconImage.sprite = null;
+                quantityText.text = string.Empty;
+                return;
+            }
+
             bool empty = slot.IsEmpty;
 
             iconImage.enabled = !empty;
@@ -59,14 +91,18 @@ namespace InventorySystem.Scripts.UI
                 quantityText.text = slot.Quantity.ToString();
         }
 
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            grid.Controller.TryUnlockNextSlot();
+        }
+
         public void OnBeginDrag(PointerEventData eventData)
         {
+            if (isLocked) return;
             if (grid == null) return;
 
             var slot = grid.Controller.Model.GetSlot(index);
             if (slot.IsEmpty) return;
-
-            InventoryDragState.DropHandled = false;
 
             iconOriginalParent = iconRect.parent;
             iconOriginalAnchoredPos = iconRect.anchoredPosition;
@@ -113,7 +149,8 @@ namespace InventorySystem.Scripts.UI
         }
 
         public void OnDrop(PointerEventData eventData)
-        { 
+        {
+            if (isLocked) return;
             if (!InventoryDragState.IsDragging) return;
 
             int from = InventoryDragState.FromIndex;
@@ -124,9 +161,6 @@ namespace InventorySystem.Scripts.UI
 
             bool splitHalf = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             grid.HandleDrop(from, to, splitHalf);
-
-            // Mark that a drop was handled so OnEndDrag doesn't interpret it as a cancel.
-            InventoryDragState.DropHandled = true;
         }
     }
 }

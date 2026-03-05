@@ -1,7 +1,6 @@
-using InventorySystem.Scripts.UI;
 using UnityEngine;
 
-namespace InventorySystem.UI
+namespace InventorySystem.Scripts.UI
 {
     public sealed class InventoryGridView : MonoBehaviour
     {
@@ -10,6 +9,7 @@ namespace InventorySystem.UI
         [SerializeField] private RectTransform contentRoot;
 
         private InventorySlotView[] views;
+        private bool isRebuilding;
 
         public InventoryController Controller => controller;
 
@@ -18,6 +18,9 @@ namespace InventorySystem.UI
             controller.Model.SlotChanged += OnSlotChanged;
             controller.Model.InventoryChanged += OnInventoryChanged;
 
+            controller.Locks.LockStateChanged += OnLockStateChanged;
+            controller.Locks.LockModelChanged += OnLockModelChanged;
+
             Rebuild(force: true);
         }
 
@@ -25,19 +28,50 @@ namespace InventorySystem.UI
         {
             controller.Model.SlotChanged -= OnSlotChanged;
             controller.Model.InventoryChanged -= OnInventoryChanged;
+
+            controller.Locks.LockStateChanged -= OnLockStateChanged;
+            controller.Locks.LockModelChanged -= OnLockModelChanged;
         }
 
         private void OnValidate()
         {
-            if (contentRoot == null)
-                contentRoot = transform as RectTransform;
-
             Debug.Assert(controller != null, $"[{nameof(InventoryGridView)}] '{nameof(controller)}' is not assigned.",
                 this);
             Debug.Assert(slotViewPrefab != null,
                 $"[{nameof(InventoryGridView)}] '{nameof(slotViewPrefab)}' is not assigned.", this);
             Debug.Assert(contentRoot != null, $"[{nameof(InventoryGridView)}] '{nameof(contentRoot)}' is not assigned.",
                 this);
+        }
+
+        private void OnLockModelChanged()
+        {
+            if (isRebuilding) return;
+            // Slot count might have changed or forced refresh is needed.
+            RefreshLockVisuals();
+        }
+
+        private void OnLockStateChanged(int index)
+        {
+            if (isRebuilding) return;
+            RefreshLockVisual(index);
+        }
+
+        private void RefreshLockVisuals()
+        {
+            if (views == null) return;
+            for (int i = 0; i < views.Length; i++)
+                RefreshLockVisual(i);
+        }
+
+        private void RefreshLockVisual(int index)
+        {
+            if (views == null) return;
+            if ((uint)index >= (uint)views.Length) return;
+
+            var view = views[index];
+            if (view == null) return;
+
+            view.SetLocked(controller != null && controller.IsSlotLocked(index));
         }
 
         private void OnSlotChanged(int index)
@@ -60,28 +94,40 @@ namespace InventorySystem.UI
             if (controller == null || controller.Model == null)
                 return;
 
-            controller.Model.EnsureInitialized();
-            int count = controller.Model.SlotCount;
-
-            if (!force && views != null && views.Length == count)
-                return;
-
-            for (int i = contentRoot.childCount - 1; i >= 0; i--)
-                Destroy(contentRoot.GetChild(i).gameObject);
-
-            views = new InventorySlotView[count];
-            for (int i = 0; i < count; i++)
+            isRebuilding = true;
+            try
             {
-                var view = Instantiate(slotViewPrefab, contentRoot);
+                controller.Model.EnsureInitialized();
+                int count = controller.Model.SlotCount;
 
-                view.Initialize(this, i);
-                view.Set(controller.Model.GetSlot(i));
-                views[i] = view;
+                if (!force && views != null && views.Length == count)
+                    return;
+
+                for (int i = contentRoot.childCount - 1; i >= 0; i--)
+                    Destroy(contentRoot.GetChild(i).gameObject);
+
+                views = new InventorySlotView[count];
+                for (int i = 0; i < count; i++)
+                {
+                    var view = Instantiate(slotViewPrefab, contentRoot);
+
+                    view.Initialize(this, i);
+                    view.Set(controller.Model.GetSlot(i));
+                    view.SetLocked(controller.IsSlotLocked(i));
+                    views[i] = view;
+                }
+            }
+            finally
+            {
+                isRebuilding = false;
             }
         }
 
         public void HandleDrop(int fromIndex, int toIndex, bool splitHalf)
         {
+            if (controller.IsSlotLocked(fromIndex) || controller.IsSlotLocked(toIndex))
+                return;
+
             if (!splitHalf)
             {
                 controller.Move(fromIndex, toIndex);

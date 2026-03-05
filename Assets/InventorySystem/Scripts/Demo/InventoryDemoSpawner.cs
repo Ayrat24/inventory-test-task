@@ -1,3 +1,4 @@
+using InventorySystem.Scripts.Currency;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -15,7 +16,7 @@ namespace InventorySystem.Scripts.Demo
         [SerializeField] private Button ammoButton;
         [SerializeField] private Button fireButton;
         [SerializeField] private Button removeButton;
-
+        [SerializeField] private Button coinsButton;
 
         private void OnValidate()
         {
@@ -36,6 +37,9 @@ namespace InventorySystem.Scripts.Demo
 
             removeButton.onClick.RemoveListener(RemoveRandom);
             removeButton.onClick.AddListener(RemoveRandom);
+
+            coinsButton.onClick.RemoveListener(AddCoins);
+            coinsButton.onClick.AddListener(AddCoins);
         }
 
         private void FireGun()
@@ -122,12 +126,19 @@ namespace InventorySystem.Scripts.Demo
                 Debug.Log($"RemoveRandom: cleared slot {chosenSlotIndex}.");
         }
 
+
+        private void AddCoins()
+        {
+            CurrencyWallet.Instance.Add(50);
+        }
+
         private void OnDestroy()
         {
             ammoButton.onClick.RemoveListener(AddAmmo);
             spawnButton.onClick.RemoveListener(SpawnRandom);
             fireButton.onClick.RemoveListener(FireGun);
             removeButton.onClick.RemoveListener(RemoveRandom);
+            coinsButton.onClick.RemoveListener(AddCoins);
         }
     }
 }
