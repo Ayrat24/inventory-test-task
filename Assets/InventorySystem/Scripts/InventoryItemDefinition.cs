@@ -3,7 +3,7 @@ using UnityEngine;
 namespace InventorySystem
 {
     [CreateAssetMenu(menuName = "Inventory/Item Definition", fileName = "ItemDefinition")]
-    public sealed class InventoryItemDefinition : ScriptableObject
+    public class InventoryItemDefinition : ScriptableObject
     {
         [Header("Identity")]
         [SerializeField] private string id;

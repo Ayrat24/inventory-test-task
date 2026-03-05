@@ -1,3 +1,4 @@
+using InventorySystem.Scripts.UI;
 using UnityEngine;
 
 namespace InventorySystem.UI
@@ -31,9 +32,12 @@ namespace InventorySystem.UI
             if (contentRoot == null)
                 contentRoot = transform as RectTransform;
 
-            Debug.Assert(controller != null, $"[{nameof(InventoryGridView)}] '{nameof(controller)}' is not assigned.", this);
-            Debug.Assert(slotViewPrefab != null, $"[{nameof(InventoryGridView)}] '{nameof(slotViewPrefab)}' is not assigned.", this);
-            Debug.Assert(contentRoot != null, $"[{nameof(InventoryGridView)}] '{nameof(contentRoot)}' is not assigned.", this);
+            Debug.Assert(controller != null, $"[{nameof(InventoryGridView)}] '{nameof(controller)}' is not assigned.",
+                this);
+            Debug.Assert(slotViewPrefab != null,
+                $"[{nameof(InventoryGridView)}] '{nameof(slotViewPrefab)}' is not assigned.", this);
+            Debug.Assert(contentRoot != null, $"[{nameof(InventoryGridView)}] '{nameof(contentRoot)}' is not assigned.",
+                this);
         }
 
         private void OnSlotChanged(int index)
@@ -44,10 +48,18 @@ namespace InventorySystem.UI
             views[index].Set(controller.Model.GetSlot(index));
         }
 
-        private void OnInventoryChanged() { }
+        private void OnInventoryChanged()
+        {
+            int count = controller.Model.SlotCount;
+            if (views == null || views.Length != count)
+                Rebuild(force: true);
+        }
 
         private void Rebuild(bool force)
         {
+            if (controller == null || controller.Model == null)
+                return;
+
             controller.Model.EnsureInitialized();
             int count = controller.Model.SlotCount;
 
@@ -61,6 +73,7 @@ namespace InventorySystem.UI
             for (int i = 0; i < count; i++)
             {
                 var view = Instantiate(slotViewPrefab, contentRoot);
+
                 view.Initialize(this, i);
                 view.Set(controller.Model.GetSlot(i));
                 views[i] = view;

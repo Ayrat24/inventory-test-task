@@ -6,10 +6,14 @@ namespace InventorySystem.UI
         public static int FromIndex { get; private set; }
         public static InventoryGridView Grid { get; private set; }
 
+        // True when an OnDrop handler successfully processed the current drag.
+        public static bool DropHandled { get; set; }
+
         public static void BeginDrag(InventoryGridView grid, int fromIndex)
         {
             Grid = grid;
             FromIndex = fromIndex;
+            DropHandled = false;
             IsDragging = true;
         }
 
@@ -17,8 +21,8 @@ namespace InventorySystem.UI
         {
             Grid = null;
             FromIndex = -1;
+            DropHandled = false;
             IsDragging = false;
         }
     }
 }
-

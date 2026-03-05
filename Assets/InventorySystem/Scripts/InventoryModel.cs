@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace InventorySystem
+namespace InventorySystem.Scripts
 {
     [Serializable]
     public sealed class InventoryModel
@@ -57,6 +57,26 @@ namespace InventorySystem
             RaiseSlotChanged(index);
         }
 
+        /// <summary>
+        /// Empties the slot at <paramref name="index"/>. Returns true if a non-empty slot was cleared.
+        /// </summary>
+        public bool RemoveAtSlot(int index)
+        {
+            EnsureInitialized();
+            ValidateIndex(index);
+
+            var s = slots[index];
+            if (s.IsEmpty)
+                return false;
+
+            s.Clear();
+            slots[index] = s;
+
+            RaiseSlotChanged(index);
+            InventoryChanged?.Invoke();
+            return true;
+        }
+
         public bool CanStack(InventoryItemDefinition a, InventoryItemDefinition b)
         {
             return a != null && a == b;
@@ -89,6 +109,8 @@ namespace InventorySystem
                     s.Quantity += toAdd;
                     slots[i] = s;
                     remaining -= toAdd;
+
+                    Debug.Log($"Add: '{item.DisplayName}' slot {i} +{toAdd} (now {s.Quantity}).");
                     RaiseSlotChanged(i);
                 }
             }
@@ -101,13 +123,20 @@ namespace InventorySystem
                 int toAdd = Math.Min(item.MaxStackSize, remaining);
                 slots[i] = new InventorySlot { Item = item, Quantity = toAdd };
                 remaining -= toAdd;
+
+                Debug.Log($"Add: '{item.DisplayName}' +{toAdd} slot={i} (now {toAdd}).");
                 RaiseSlotChanged(i);
             }
 
-            if (remaining != amount)
+            int added = amount - remaining;
+
+            if (added > 0)
                 InventoryChanged?.Invoke();
 
-            return amount - remaining;
+            if (added < amount)
+                Debug.LogError($"Add failed: '{item.DisplayName}' requested {amount}, added {added}.");
+
+            return added;
         }
 
         /// <summary>
@@ -205,6 +234,56 @@ namespace InventorySystem
             return 0;
         }
 
+        /// <summary>
+        /// Tries to consume (remove) up to <paramref name="amount"/> of <paramref name="item"/>.
+        /// Returns true if the full amount was consumed.
+        /// </summary>
+        public bool TryConsume(InventoryItemDefinition item, int amount)
+        {
+            EnsureInitialized();
+            if (item == null) return false;
+            if (amount <= 0) return true;
+
+            // First pass: count total available.
+            int available = 0;
+            for (int i = 0; i < slots.Length; i++)
+            {
+                if (slots[i].IsEmpty) continue;
+                if (!CanStack(slots[i].Item, item)) continue;
+                available += slots[i].Quantity;
+                if (available >= amount) break;
+            }
+
+            if (available < amount)
+                return false;
+
+            // Second pass: actually consume.
+            int remaining = amount;
+            bool anyChanged = false;
+            for (int i = 0; i < slots.Length && remaining > 0; i++)
+            {
+                var s = slots[i];
+                if (s.IsEmpty) continue;
+                if (!CanStack(s.Item, item)) continue;
+
+                int toRemove = Math.Min(s.Quantity, remaining);
+                s.Quantity -= toRemove;
+                remaining -= toRemove;
+
+                if (s.Quantity <= 0)
+                    s.Clear();
+
+                slots[i] = s;
+                RaiseSlotChanged(i);
+                anyChanged = true;
+            }
+
+            if (anyChanged)
+                InventoryChanged?.Invoke();
+
+            return true;
+        }
+
         private void RaiseAllChanged()
         {
             InventoryChanged?.Invoke();
@@ -225,4 +304,3 @@ namespace InventorySystem
         }
     }
 }
-

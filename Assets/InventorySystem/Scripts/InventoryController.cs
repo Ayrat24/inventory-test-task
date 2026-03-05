@@ -1,3 +1,4 @@
+using InventorySystem.Scripts;
 using UnityEngine;
 
 namespace InventorySystem
@@ -19,9 +20,9 @@ namespace InventorySystem
         }
 
         public int Add(InventoryItemDefinition item, int amount) => model.Add(item, amount);
+        public bool TryConsume(InventoryItemDefinition item, int amount) => model.TryConsume(item, amount);
         public void Move(int fromIndex, int toIndex) => model.Move(fromIndex, toIndex);
         public int Split(int fromIndex, int toIndex, int amount) => model.Split(fromIndex, toIndex, amount);
         public InventorySlot GetSlot(int index) => model.GetSlot(index);
     }
 }
-

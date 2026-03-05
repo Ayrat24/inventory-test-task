@@ -1,9 +1,10 @@
+using InventorySystem.UI;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-namespace InventorySystem.UI
+namespace InventorySystem.Scripts.UI
 {
     public sealed class InventorySlotView : MonoBehaviour,
         IBeginDragHandler,
@@ -65,6 +66,8 @@ namespace InventorySystem.UI
             var slot = grid.Controller.Model.GetSlot(index);
             if (slot.IsEmpty) return;
 
+            InventoryDragState.DropHandled = false;
+
             iconOriginalParent = iconRect.parent;
             iconOriginalAnchoredPos = iconRect.anchoredPosition;
             iconRect.SetParent(rootCanvas.transform, true);
@@ -88,12 +91,16 @@ namespace InventorySystem.UI
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            // Only the source slot view should restore the icon.
             if (!InventoryDragState.IsDragging) return;
+            if (InventoryDragState.FromIndex != index) return;
 
+            // Always restore visuals (whether cancelled or successfully dropped).
             iconRect.SetParent(iconOriginalParent, true);
             iconRect.anchoredPosition = iconOriginalAnchoredPos;
-
             highlight.enabled = false;
+
+            // If no drop handler ran, treat it as cancel; otherwise the model was already updated.
             InventoryDragState.EndDrag();
         }
 
@@ -106,15 +113,20 @@ namespace InventorySystem.UI
         }
 
         public void OnDrop(PointerEventData eventData)
-        {
-            if (grid == null) return;
+        { 
             if (!InventoryDragState.IsDragging) return;
 
             int from = InventoryDragState.FromIndex;
             int to = index;
 
+            // Ignore self-drop.
+            if (from == to) return;
+
             bool splitHalf = Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift);
             grid.HandleDrop(from, to, splitHalf);
+
+            // Mark that a drop was handled so OnEndDrag doesn't interpret it as a cancel.
+            InventoryDragState.DropHandled = true;
         }
     }
 }
