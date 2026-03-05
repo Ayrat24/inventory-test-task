@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using InventorySystem.Scripts.Currency;
+using InventorySystem.Scripts.Items;
 using UnityEngine;
 
 namespace InventorySystem.Scripts

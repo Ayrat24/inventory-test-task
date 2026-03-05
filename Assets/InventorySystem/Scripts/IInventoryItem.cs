@@ -1,3 +1,5 @@
+using InventorySystem.Scripts.Items;
+
 namespace InventorySystem
 {
     /// <summary>

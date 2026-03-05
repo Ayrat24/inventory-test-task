@@ -1,4 +1,5 @@
 using InventorySystem.Scripts.Currency;
+using InventorySystem.Scripts.Items;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
